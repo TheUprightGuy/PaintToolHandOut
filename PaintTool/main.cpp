@@ -22,6 +22,7 @@ CCanvas* g_pCanvas;
 IShape* g_pShape = 0;
 HMENU g_hMenu;
 
+HWND g_Dialog;
 
 //Enum to decalre the type of tool supported by the application.
 enum ESHAPE
@@ -40,6 +41,41 @@ void GameLoop()
 	//One frame of game logic occurs here...
 }
 
+BOOL CALLBACK DialogProc(HWND _hwnd,
+	UINT _msg,
+	WPARAM _wparam,
+	LPARAM _lparam)
+{
+	
+	DWORD dwPos;
+
+	switch (_msg)
+	{
+	case WM_COMMAND:
+	{
+		switch (LOWORD(_wparam))
+		{
+		case IDOK:
+
+			dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
+			iWidth = dwPos;
+		}
+
+	}
+	break;
+	case WM_DESTROY:
+	{
+		// Kill the application, this sends a WM_QUIT message.
+		PostQuitMessage(0);
+
+		// Return success.
+		return (0);
+	}
+	break;
+
+	default:break;
+	} // End switch.
+}
 LRESULT CALLBACK WindowProc(HWND _hwnd,
 	UINT _msg,
 	WPARAM _wparam,
@@ -53,8 +89,10 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	static POINT mouseEnd;
 	static bool bDrawing = false;
 
-	static int iWidth = 50;
-
+	static COLORREF rgbCurrent;
+	static COLORREF CustCol[16];
+	static CHOOSECOLOR cc;
+	
 	switch (_msg)
 	{
 	case WM_CREATE:
@@ -131,7 +169,26 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		{
 		case ID_SHAPE_LINE:
 		{
-			g_pShape = new CLine(0, iWidth, RGB(225, 225, 225), mouseStart.x, mouseStart.y);
+			g_pShape = new CLine(0, iWidth, &rgbCurrent, mouseStart.x, mouseStart.y);
+			break;
+		}
+		case ID_PEN_WIDTH:
+		{
+			ShowWindow(g_Dialog, SW_SHOWNORMAL);
+			break;
+		}
+		case ID_PEN_COLOR:
+		{
+			cc;
+			cc.lStructSize = sizeof(cc);
+			cc.hwndOwner = _hwnd;
+			cc.lpCustColors = CustCol;
+			cc.rgbResult = rgbCurrent;
+			cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+				
+			ChooseColor(&cc);
+			rgbCurrent = cc.rgbResult;
+
 			break;
 		}
 		case ID_FILE_EXIT:
@@ -148,6 +205,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		default:
 			break;
 		}
+
 		return(0);
 	}
 	break;
@@ -219,6 +277,9 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 		return (0);
 	}
 
+//	g_Dialog = CreateDialog(_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc);
+
+
 	// Enter main event loop
 	while (true)
 	{
@@ -231,10 +292,12 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 				break;
 			}
 
-			// Translate any accelerator keys.
-			TranslateMessage(&msg);
-			// Send the message to the window proc.
-			DispatchMessage(&msg);
+			if (g_Dialog == 0 ||
+				!IsDialogMessage(g_Dialog, &msg))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
 		}
 
 		// Main game processing goes here.
