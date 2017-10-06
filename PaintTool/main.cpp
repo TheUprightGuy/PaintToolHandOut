@@ -22,7 +22,6 @@ CCanvas* g_pCanvas;
 IShape* g_pShape = 0;
 HMENU g_hMenu;
 
-HWND g_Dialog;
 
 //Enum to decalre the type of tool supported by the application.
 enum ESHAPE
@@ -72,6 +71,11 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		hdc = BeginPaint(_hwnd, &ps);
 		// You would do all your painting here...
 		
+		if (!bDrawing)
+		{
+
+		}
+
 		EndPaint(_hwnd, &ps);
 		// Return Success.
 		return (0);
@@ -79,18 +83,20 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	break;
 	case WM_LBUTTONDOWN:
 	{
-		if (bDrawing)
+		if (g_pShape != NULL)
 		{
+			bDrawing = true;
 			mouseStart.x = static_cast<int>(LOWORD(_lparam));
 			mouseStart.y = static_cast<int>(HIWORD(_lparam));
 		}
-		
+	
 		break;
 	}
 	case WM_LBUTTONUP:
 	{
 		if (bDrawing)
 		{
+			bDrawing = false;
 			mouseEnd.x = static_cast<int>(LOWORD(_lparam));
 			mouseEnd.y = static_cast<int>(HIWORD(_lparam));
 
@@ -99,15 +105,27 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 			g_pShape->SetEndX(mouseEnd.x);
 			g_pShape->SetEndY(mouseEnd.y);
 
-			g_pShape->Draw(GetDC(_hwnd));
+			g_pShape->Draw(GetDC(_hwnd));	
 		}
 		
 
 		break;
 	}
+	case WM_MOUSEMOVE:
+	{
+		if (bDrawing)
+		{
+			mouseEnd.x = static_cast<int>(LOWORD(_lparam));
+			mouseEnd.y = static_cast<int>(HIWORD(_lparam));
+			g_pShape->SetEndX(mouseEnd.x);
+			g_pShape->SetEndY(mouseEnd.y);
+			g_pShape->Draw(GetDC(_hwnd));
+			InvalidateRect(_hwnd, NULL, TRUE);
+		}
+		break;
+	}
 	case WM_COMMAND:
 	{
-		bDrawing = true;
 
 		switch (LOWORD(_wparam))
 		{
@@ -158,6 +176,7 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 {
 	WNDCLASSEX winclass; // This will hold the class we create.
 	HWND hwnd;           // Generic window handle.
+	//trackbar;
 	MSG msg;             // Generic message.
 
 	g_hInstance = _hInstance;
