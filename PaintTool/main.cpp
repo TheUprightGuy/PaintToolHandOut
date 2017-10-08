@@ -21,7 +21,7 @@ HINSTANCE g_hInstance;
 CCanvas* g_pCanvas;
 IShape* g_pShape = 0;
 HMENU g_hMenu;
-int iWidth = 50;
+
 HWND g_Dialog;
 
 //Enum to decalre the type of tool supported by the application.
@@ -41,41 +41,41 @@ void GameLoop()
 	//One frame of game logic occurs here...
 }
 
-//BOOL CALLBACK DialogProc(HWND _hwnd,
-//	UINT _msg,
-//	WPARAM _wparam,
-//	LPARAM _lparam)
-//{
-//	
-//	DWORD dwPos;
-//
-//	switch (_msg)
-//	{
-//	case WM_COMMAND:
-//	{
-//		switch (LOWORD(_wparam))
-//		{
-//		case IDOK:
-//
-//			dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
-//			iWidth = dwPos;
-//		}
-//
-//	}
-//	break;
-//	case WM_DESTROY:
-//	{
-//		// Kill the application, this sends a WM_QUIT message.
-//		PostQuitMessage(0);
-//
-//		// Return success.
-//		return (0);
-//	}
-//	break;
-//
-//	default:break;
-//	} // End switch.
-//}
+BOOL CALLBACK DialogProc(HWND _hwnd,
+	UINT _msg,
+	WPARAM _wparam,
+	LPARAM _lparam)
+{
+	
+	DWORD dwPos;
+
+	switch (_msg)
+	{
+	case WM_COMMAND:
+	{
+		switch (LOWORD(_wparam))
+		{
+		case IDOK:
+
+			dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
+			iWidth = dwPos;
+		}
+
+	}
+	break;
+	case WM_DESTROY:
+	{
+		// Kill the application, this sends a WM_QUIT message.
+		PostQuitMessage(0);
+
+		// Return success.
+		return (0);
+	}
+	break;
+
+	default:break;
+	} // End switch.
+}
 LRESULT CALLBACK WindowProc(HWND _hwnd,
 	UINT _msg,
 	WPARAM _wparam,
@@ -87,9 +87,10 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	
 	static POINT mouseStart;
 	static POINT mouseEnd;
-	static bool bDrawing = false;
+	static bool bDrawing;
 
-	static COLORREF rgbCurrent;
+	static COLORREF rgbBrushCurrent;
+	static COLORREF rgbPenCurrent;
 	static COLORREF CustCol[16];
 	static CHOOSECOLOR cc;
 	
@@ -109,6 +110,11 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		hdc = BeginPaint(_hwnd, &ps);
 		// You would do all your painting here...
 		
+		if (!bDrawing)
+		{
+
+		}
+
 		EndPaint(_hwnd, &ps);
 		// Return Success.
 		return (0);
@@ -116,18 +122,20 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	break;
 	case WM_LBUTTONDOWN:
 	{
-		if (bDrawing)
+		if (g_pShape != NULL)
 		{
+			bDrawing = true;
 			mouseStart.x = static_cast<int>(LOWORD(_lparam));
 			mouseStart.y = static_cast<int>(HIWORD(_lparam));
 		}
-		
+	
 		break;
 	}
 	case WM_LBUTTONUP:
 	{
 		if (bDrawing)
 		{
+			bDrawing = false;
 			mouseEnd.x = static_cast<int>(LOWORD(_lparam));
 			mouseEnd.y = static_cast<int>(HIWORD(_lparam));
 
@@ -136,21 +144,26 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 			g_pShape->SetEndX(mouseEnd.x);
 			g_pShape->SetEndY(mouseEnd.y);
 
-			g_pShape->Draw(GetDC(_hwnd));
+			g_pShape->Draw(GetDC(_hwnd));	
 		}
 		
 
 		break;
 	}
+
 	case WM_COMMAND:
 	{
-		bDrawing = true;
 
 		switch (LOWORD(_wparam))
 		{
 		case ID_SHAPE_LINE:
 		{
-			g_pShape = new CLine(0, iWidth, &rgbCurrent, mouseStart.x, mouseStart.y);
+			g_pShape = new CLine(0, 10, &rgbPenCurrent, mouseStart.x, mouseStart.y);
+			break;
+		}
+		case ID_PEN_WIDTH:
+		{
+			ShowWindow(g_Dialog, SW_SHOWNORMAL);
 			break;
 		}
 		case ID_PEN_COLOR:
@@ -159,13 +172,26 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 			cc.lStructSize = sizeof(cc);
 			cc.hwndOwner = _hwnd;
 			cc.lpCustColors = CustCol;
-			cc.rgbResult = rgbCurrent;
+			cc.rgbResult = rgbPenCurrent;
 			cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 				
-			if (ChooseColor(&cc))
-			{
-				rgbCurrent = cc.rgbResult;
-			}
+			ChooseColor(&cc);
+			rgbPenCurrent = cc.rgbResult;
+
+			break;
+		}
+		case ID_BRUSH_COLOR:
+		{
+			cc;
+			cc.lStructSize = sizeof(cc);
+			cc.hwndOwner = _hwnd;
+			cc.lpCustColors = CustCol;
+			cc.rgbResult = rgbBrushCurrent;
+			cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+				
+			ChooseColor(&cc);
+			rgbCurrent = cc.rgbResult;
+
 			break;
 		}
 		case ID_FILE_EXIT:
@@ -211,6 +237,7 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 {
 	WNDCLASSEX winclass; // This will hold the class we create.
 	HWND hwnd;           // Generic window handle.
+	//trackbar;
 	MSG msg;             // Generic message.
 
 	g_hInstance = _hInstance;
@@ -253,7 +280,6 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 		return (0);
 	}
 
-//	g_Dialog = CreateDialog(_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc);
 
 
 	// Enter main event loop
@@ -268,12 +294,9 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 				break;
 			}
 
-			if (g_Dialog == 0 ||
-				!IsDialogMessage(g_Dialog, &msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+
 		}
 
 		// Main game processing goes here.
