@@ -41,46 +41,6 @@ void GameLoop()
 	//One frame of game logic occurs here...
 }
 
-LRESULT CALLBACK SliderProc(HWND _hwnd,
-	UINT _msg,
-	WPARAM _wparam,
-	LPARAM _lparam)
-{
-	
-	DWORD dwPos;
-
-	switch (_msg)
-	{
-	case WM_COMMAND:
-	{
-		switch (LOWORD(_wparam))
-		{
-		case IDOK:
-		{
-			//		dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
-					//iWidth = dwPos;
-		}
-		break;
-
-		default:break;
-		}
-	}
-	break;
-
-	case WM_DESTROY:
-	{
-		// Kill the application, this sends a WM_QUIT message.
-		PostQuitMessage(0);
-
-		// Return success.
-		return (0);
-	}
-	break;
-
-	default:break;
-	} // End switch.
-}
-
 LRESULT CALLBACK WindowProc(HWND _hwnd,
 	UINT _msg,
 	WPARAM _wparam,
@@ -94,7 +54,8 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	static POINT mouseEnd;
 	static bool bDrawing;
 
-	static COLORREF rgbCurrent;
+	static COLORREF rgbBrushCurrent;
+	static COLORREF rgbPenCurrent;
 	static COLORREF CustCol[16];
 	static CHOOSECOLOR cc;
 	
@@ -162,8 +123,12 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		{
 		case ID_SHAPE_LINE:
 		{
-			g_pShape = new CLine(0, 10, &rgbCurrent, mouseStart.x, mouseStart.y);
+			g_pShape = new CLine(0, 10, &rgbPenCurrent, mouseStart.x, mouseStart.y);
 			break;
+		}
+		case ID_SHAPE_R:
+		{
+			g_pShape = new CRectangle(0, &rgbBrushCurrent, 0, &rgbPenCurrent, mouseStart.x, mouseStart.y);
 		}
 		case ID_PEN_WIDTH:
 		{
@@ -176,11 +141,25 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 			cc.lStructSize = sizeof(cc);
 			cc.hwndOwner = _hwnd;
 			cc.lpCustColors = CustCol;
-			cc.rgbResult = rgbCurrent;
+			cc.rgbResult = rgbPenCurrent;
 			cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 				
 			ChooseColor(&cc);
-			rgbCurrent = cc.rgbResult;
+			rgbPenCurrent = cc.rgbResult;
+
+			break;
+		}
+		case ID_BRUSH_COLOR:
+		{
+			cc;
+			cc.lStructSize = sizeof(cc);
+			cc.hwndOwner = _hwnd;
+			cc.lpCustColors = CustCol;
+			cc.rgbResult = rgbBrushCurrent;
+			cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+			ChooseColor(&cc);
+			rgbBrushCurrent = cc.rgbResult;
 
 			break;
 		}
@@ -270,7 +249,6 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 		return (0);
 	}
 
-	g_Dialog = CreateDialog(_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, SliderProc);
 
 
 	// Enter main event loop
@@ -285,12 +263,9 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 				break;
 			}
 
-			if (g_Dialog == 0 ||
-				!IsDialogMessage(g_Dialog, &msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+
 		}
 
 		// Main game processing goes here.

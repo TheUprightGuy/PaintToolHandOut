@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="line.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="rectangle.cpp" />
     <ClCompile Include="shape.cpp" />
   </ItemGroup>
   <ItemGroup>
