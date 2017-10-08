@@ -41,41 +41,41 @@ void GameLoop()
 	//One frame of game logic occurs here...
 }
 
-BOOL CALLBACK DialogProc(HWND _hwnd,
-	UINT _msg,
-	WPARAM _wparam,
-	LPARAM _lparam)
-{
-	
-	DWORD dwPos;
-
-	switch (_msg)
-	{
-	case WM_COMMAND:
-	{
-		switch (LOWORD(_wparam))
-		{
-		case IDOK:
-
-			dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
-			iWidth = dwPos;
-		}
-
-	}
-	break;
-	case WM_DESTROY:
-	{
-		// Kill the application, this sends a WM_QUIT message.
-		PostQuitMessage(0);
-
-		// Return success.
-		return (0);
-	}
-	break;
-
-	default:break;
-	} // End switch.
-}
+//BOOL CALLBACK DialogProc(HWND _hwnd,
+//	UINT _msg,
+//	WPARAM _wparam,
+//	LPARAM _lparam)
+//{
+//	
+//	DWORD dwPos;
+//
+//	switch (_msg)
+//	{
+//	case WM_COMMAND:
+//	{
+//		switch (LOWORD(_wparam))
+//		{
+//		case IDOK:
+//
+//			dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
+//			iWidth = dwPos;
+//		}
+//
+//	}
+//	break;
+//	case WM_DESTROY:
+//	{
+//		// Kill the application, this sends a WM_QUIT message.
+//		PostQuitMessage(0);
+//
+//		// Return success.
+//		return (0);
+//	}
+//	break;
+//
+//	default:break;
+//	} // End switch.
+//}
 LRESULT CALLBACK WindowProc(HWND _hwnd,
 	UINT _msg,
 	WPARAM _wparam,
@@ -153,11 +153,6 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 			g_pShape = new CLine(0, iWidth, &rgbCurrent, mouseStart.x, mouseStart.y);
 			break;
 		}
-		case ID_PEN_WIDTH:
-		{
-			ShowWindow(g_Dialog, SW_SHOWNORMAL);
-			break;
-		}
 		case ID_PEN_COLOR:
 		{
 			cc;
@@ -167,9 +162,10 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 			cc.rgbResult = rgbCurrent;
 			cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 				
-			ChooseColor(&cc);
-			rgbCurrent = cc.rgbResult;
-
+			if (ChooseColor(&cc))
+			{
+				rgbCurrent = cc.rgbResult;
+			}
 			break;
 		}
 		case ID_FILE_EXIT:
