@@ -41,7 +41,7 @@ void GameLoop()
 	//One frame of game logic occurs here...
 }
 
-BOOL CALLBACK DialogProc(HWND _hwnd,
+LRESULT CALLBACK SliderProc(HWND _hwnd,
 	UINT _msg,
 	WPARAM _wparam,
 	LPARAM _lparam)
@@ -56,13 +56,17 @@ BOOL CALLBACK DialogProc(HWND _hwnd,
 		switch (LOWORD(_wparam))
 		{
 		case IDOK:
-
-			dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
-			iWidth = dwPos;
+		{
+			//		dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
+					//iWidth = dwPos;
 		}
+		break;
 
+		default:break;
+		}
 	}
 	break;
+
 	case WM_DESTROY:
 	{
 		// Kill the application, this sends a WM_QUIT message.
@@ -76,6 +80,7 @@ BOOL CALLBACK DialogProc(HWND _hwnd,
 	default:break;
 	} // End switch.
 }
+
 LRESULT CALLBACK WindowProc(HWND _hwnd,
 	UINT _msg,
 	WPARAM _wparam,
@@ -87,7 +92,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	
 	static POINT mouseStart;
 	static POINT mouseEnd;
-	static bool bDrawing = false;
+	static bool bDrawing;
 
 	static COLORREF rgbCurrent;
 	static COLORREF CustCol[16];
@@ -149,19 +154,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 
 		break;
 	}
-	case WM_MOUSEMOVE:
-	{
-		if (bDrawing)
-		{
-			mouseEnd.x = static_cast<int>(LOWORD(_lparam));
-			mouseEnd.y = static_cast<int>(HIWORD(_lparam));
-			g_pShape->SetEndX(mouseEnd.x);
-			g_pShape->SetEndY(mouseEnd.y);
-			g_pShape->Draw(GetDC(_hwnd));
-			InvalidateRect(_hwnd, NULL, TRUE);
-		}
-		break;
-	}
+
 	case WM_COMMAND:
 	{
 
@@ -169,7 +162,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		{
 		case ID_SHAPE_LINE:
 		{
-			g_pShape = new CLine(0, iWidth, &rgbCurrent, mouseStart.x, mouseStart.y);
+			g_pShape = new CLine(0, 10, &rgbCurrent, mouseStart.x, mouseStart.y);
 			break;
 		}
 		case ID_PEN_WIDTH:
@@ -277,7 +270,7 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 		return (0);
 	}
 
-//	g_Dialog = CreateDialog(_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc);
+	g_Dialog = CreateDialog(_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, SliderProc);
 
 
 	// Enter main event loop

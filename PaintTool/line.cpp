@@ -24,7 +24,7 @@ CLine::~CLine()
 void CLine::Draw(HDC _hdc)
 {
 
-	HPEN green_pen = CreatePen(PS_SOLID, m_iWidth, *m_Color);
+	HPEN green_pen = CreatePen(PS_DOT, m_iWidth, *m_Color);
 	// Select the pen into the context:
 	//HPEN old_pen = static_cast<HPEN>
 
