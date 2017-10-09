@@ -91,6 +91,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	static POINT mouseEnd;
 	static bool bDrawing;
 
+	static bool bisHatch;
 	static COLORREF rgbBrushCurrent;
 	static COLORREF rgbPenCurrent;
 	static COLORREF CustCol[16];
@@ -169,7 +170,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		}
 		case ID_SHAPE_R:
 		{
-			g_pShape = new CRectangle(0, &rgbBrushCurrent, 0, &rgbPenCurrent, mouseStart.x, mouseStart.y);
+			g_pShape = new CRectangle(&bisHatch, 0, &rgbBrushCurrent, 0, &rgbPenCurrent, mouseStart.x, mouseStart.x);
 			break;
 		}
 		case ID_SHAPE_ELLIPSE:
@@ -207,6 +208,18 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 				
 			ChooseColor(&cc);
 			rgbBrushCurrent = cc.rgbResult;
+
+			break;
+		}
+		case ID_STYLE_HATCH:
+		{
+			bisHatch = true;
+
+			break;
+		}
+		case ID_STYLE_SOLID:
+		{
+			bisHatch = false;
 
 			break;
 		}
