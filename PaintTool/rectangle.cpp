@@ -23,7 +23,8 @@ CRectangle::~CRectangle()
 void CRectangle::Draw(HDC _hdc)
 {
 	HPEN drawPen = CreatePen(m_iPenStyle, 10, *m_iPenColor);
-	HBRUSH drawBrush = CreateSolidBrush(*m_iFillColor);
+	HBRUSH drawBrush = CreateHatchBrush(HS_CROSS, *m_iFillColor); //= CreateSolidBrush(*m_iFillColor);
+
 
 	SelectObject(_hdc, drawBrush);
 	SelectObject(_hdc, drawPen);

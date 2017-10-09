@@ -22,11 +22,11 @@ public:
 	virtual ~CRectangle();
 
 	virtual void Draw(HDC _hdc);
-	void SetBrushStyle(EBRUSHSTYLE _brushStyle);
-	void SetFillColor(COLORREF _newColor);
-	void SetPenStyle (int _iPenStyle);
-	void SetPenColor(COLORREF _newColor);
-	void SetHatchStyle(int _iHatchStyle);
+	void SetBrushStyle(EBRUSHSTYLE _brushStyle) { m_iBrushStyle = _brushStyle; }
+	void SetFillColor(COLORREF* _newColor) { m_Color = _newColor; }
+	void SetPenStyle(int _iPenStyle) { m_iPenStyle = _iPenStyle; }
+	void SetPenColor(COLORREF* _newColor) { m_iPenColor = _newColor; }
+	void SetHatchStyle(int _iHatchStyle) { m_iHatchStyle = _iHatchStyle; }
 	
 
 private:
