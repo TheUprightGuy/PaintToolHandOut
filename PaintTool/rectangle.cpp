@@ -1,8 +1,8 @@
 #include "rectangle.h"
 
-CRectangle::CRectangle(/*HBRUSHSTYLE _iBrushStyle, */int _iHatchStyle, COLORREF* _FillColor, int _iPenStyle, COLORREF* _PenColor, int _X, int Y)
+CRectangle::CRectangle(bool* _iBrushStyle, int _iHatchStyle, COLORREF* _FillColor, int _iPenStyle, COLORREF* _PenColor, int _X, int _Y)
 {
-	//m_iBrushStyle = _iBrushStyle;
+	m_iBrushStyle = _iBrushStyle;
 	m_iHatchStyle = _iHatchStyle;
 	m_iFillColor = _FillColor;
 	m_iPenStyle = _iPenStyle;
@@ -23,8 +23,17 @@ CRectangle::~CRectangle()
 void CRectangle::Draw(HDC _hdc)
 {
 	HPEN drawPen = CreatePen(m_iPenStyle, 10, *m_iPenColor);
-	HBRUSH drawBrush = CreateHatchBrush(HS_CROSS, *m_iFillColor); //= CreateSolidBrush(*m_iFillColor);
+	HBRUSH drawBrush;
 
+	if (*m_iBrushStyle)
+	{
+		drawBrush = CreateHatchBrush(HS_CROSS, *m_iFillColor); //= CreateSolidBrush(*m_iFillColor);
+
+	}
+	else
+	{
+		drawBrush = CreateSolidBrush(*m_iFillColor);
+	}
 
 	SelectObject(_hdc, drawBrush);
 	SelectObject(_hdc, drawPen);

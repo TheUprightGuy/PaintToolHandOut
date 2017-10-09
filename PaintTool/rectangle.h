@@ -17,12 +17,12 @@ enum EBRUSHSTYLE
 class CRectangle : public IShape
 {
 public:
-	CRectangle(/*EBRUSHSTYLE _iBrushStyle,*/ int _iHatchStyle, COLORREF* _FillColor, int _iPenStyle, COLORREF* _PenColor, int _X, int _Y);
+	CRectangle(bool* _iBrushStyle, int _iHatchStyle, COLORREF* _FillColor, int _iPenStyle, COLORREF* _PenColor, int _X, int _Y);
 	CRectangle();
 	virtual ~CRectangle();
 
 	virtual void Draw(HDC _hdc);
-	void SetBrushStyle(EBRUSHSTYLE _brushStyle) { m_iBrushStyle = _brushStyle; }
+	void SetBrushStyle(bool* _brushStyle) { m_iBrushStyle = _brushStyle; }
 	void SetFillColor(COLORREF* _newColor) { m_Color = _newColor; }
 	void SetPenStyle(int _iPenStyle) { m_iPenStyle = _iPenStyle; }
 	void SetPenColor(COLORREF* _newColor) { m_iPenColor = _newColor; }
@@ -30,7 +30,7 @@ public:
 	
 
 private:
-	EBRUSHSTYLE m_iBrushStyle;
+	bool* m_iBrushStyle;
 	int m_iHatchStyle;
 	COLORREF* m_iFillColor;
 	int m_iPenStyle;
