@@ -1,6 +1,6 @@
 #include "line.h"
 
-CLine::CLine(int _iStyle, int _iWidth, COLORREF* _newColor, int _iStartX, int _iStartY)
+CLine::CLine(int _iStyle, int* _iWidth, COLORREF* _newColor, int _iStartX, int _iStartY)
 {
 	m_iStyle = _iStyle;
 	m_iWidth = _iWidth;
@@ -24,7 +24,7 @@ CLine::~CLine()
 void CLine::Draw(HDC _hdc)
 {
 
-	HPEN green_pen = CreatePen(m_iStyle, m_iWidth, *m_Color);
+	HPEN green_pen = CreatePen(m_iStyle, *m_iWidth, *m_Color);
 	// Select the pen into the context:
 	//HPEN old_pen = static_cast<HPEN>
 

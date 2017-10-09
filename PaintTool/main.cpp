@@ -3,6 +3,9 @@
 
 #include <windows.h>   // Include all the windows headers.
 #include <windowsx.h>  // Include useful macros.
+#include <strstream>
+#include <sstream>
+#include <string>
 
 #include "resource.h"
 #include "shape.h"
@@ -24,6 +27,7 @@ HMENU g_hMenu;
 
 HWND g_Dialog;
 
+int g_iWidth;
 //Enum to decalre the type of tool supported by the application.
 enum ESHAPE
 {
@@ -41,41 +45,110 @@ void GameLoop()
 	//One frame of game logic occurs here...
 }
 
-//BOOL CALLBACK DialogProc(HWND _hwnd,
-//	UINT _msg,
-//	WPARAM _wparam,
-//	LPARAM _lparam)
-//{
-//	
-//	DWORD dwPos;
-//
-//	switch (_msg)
-//	{
-//	case WM_COMMAND:
-//	{
-//		switch (LOWORD(_wparam))
-//		{
-//		case IDOK:
-//
-//			dwPos = SendMessage(_hwnd, SBM_GETPOS, 0, 0);
-//			iWidth = dwPos;
-//		}
-//
-//	}
-//	break;
-//	case WM_DESTROY:
-//	{
-//		// Kill the application, this sends a WM_QUIT message.
-//		PostQuitMessage(0);
-//
-//		// Return success.
-//		return (0);
-//	}
-//	break;
-//
-//	default:break;
-//	} // End switch.
-//}
+//Taken from MDS GD1M02Calc
+template<typename T>
+std::string ToString(const T& _value)
+{
+	std::strstream theStream;
+	theStream << _value << std::ends;
+	return (theStream.str());
+}
+
+template<typename T>
+std::wstring ToWideString(const T& _value)
+{
+	std::wstringstream theStream;
+	theStream << _value << std::ends;
+	return (theStream.str());
+}
+
+void WriteToEditBox(HWND _hDlg, int _iResourceID, float _fValue)
+{
+	std::wstring _strValue = ToWideString(_fValue);
+	SetDlgItemText(_hDlg, _iResourceID, _strValue.c_str());
+}
+
+float ReadFromEditBox(HWND _hDlg, int _iResourceID)
+{
+	wchar_t _pcValue[10];
+	ZeroMemory(_pcValue, 10);
+	GetDlgItemText(_hDlg, _iResourceID, _pcValue, 10);
+	if (_pcValue[0] == 0)
+	{
+		return 0.0f;
+	}
+	else
+	{
+		return static_cast<float>(_wtof(_pcValue));
+	}
+}
+////////////////////////////////////////////////////
+
+LRESULT CALLBACK DialogProc(HWND _hwnd,
+	UINT _msg,
+	WPARAM _wparam,
+	LPARAM _lparam)
+{
+	static int test;
+
+
+	switch (_msg)
+	{
+	case WM_INITDIALOG:
+	{
+		WriteToEditBox(_hwnd, IDC_EDIT1, 10);
+		SendMessage(_hwnd, SBM_SETRANGE, 10, 100);
+		SendMessage(_hwnd, SBM_SETPOS, 10, TRUE);
+	//	int test;
+	}
+	break;
+	case WM_HSCROLL:
+	{
+		switch (LOWORD(_wparam)) {
+			case SB_THUMBTRACK:
+			{
+				DWORD value = HIWORD(_wparam);
+				WriteToEditBox(_hwnd, IDC_EDIT1, value);
+			}
+			default:break;
+			}
+		
+	}
+	break;
+	case WM_COMMAND:
+	{
+		switch (LOWORD(_wparam))
+		{
+		case IDCANCEL:
+		{
+			ShowWindow(_hwnd, SW_HIDE);
+			return TRUE;
+		}
+			break;
+
+		case IDOK:
+		{
+			g_iWidth = ReadFromEditBox(_hwnd, IDC_EDIT1);
+			ShowWindow(_hwnd, SW_HIDE);
+			return TRUE;
+		}
+			break;
+		default:
+			break;
+		}
+	}
+	break;
+	case WM_CLOSE:
+	{
+		ShowWindow(_hwnd, SW_HIDE);
+		return TRUE;
+		break;
+	}
+	default:
+		break;
+	}
+	return FALSE;
+}
 
 
 LRESULT CALLBACK WindowProc(HWND _hwnd,
@@ -95,14 +168,14 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	static COLORREF rgbPenCurrent;
 	static COLORREF CustCol[16];
 	static CHOOSECOLOR cc;
-	
+	 
+
 	switch (_msg)
 	{
 	case WM_CREATE:
 	{
 		// Do initialization stuff here.
-		
-
+		g_iWidth = 10;
 		// Return Success.
 		return (0);
 	}
@@ -164,7 +237,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		{
 		case ID_SHAPE_LINE:
 		{
-			g_pShape = new CLine(0, 10, &rgbPenCurrent, mouseStart.x, mouseStart.y);
+			g_pShape = new CLine(0, &g_iWidth, &rgbPenCurrent, mouseStart.x, mouseStart.y);
 			break;
 		}
 		case ID_SHAPE_R:
@@ -228,6 +301,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		return(0);
 	}
 	break;
+
 	case WM_DESTROY:
 	{
 		// Kill the application, this sends a WM_QUIT message.
@@ -296,6 +370,8 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 		return (0);
 	}
 
+	g_Dialog = CreateDialog(_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), hwnd, DialogProc);
+
 	// Enter main event loop
 	while (true)
 	{
@@ -308,8 +384,12 @@ int WINAPI WinMain(HINSTANCE _hInstance,
 				break;
 			}
 
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			if (g_Dialog == 0 ||
+				!IsDialogMessage(g_Dialog, &msg))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
 
 		}
 
